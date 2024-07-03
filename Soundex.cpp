@@ -1,6 +1,7 @@
 #include "Soundex.h"
 #include <cctype>
 #include <unordered_map>
+#include <unordered_set>
 
 // Helper function to get the Soundex code for a character
 char getSoundexCode(char c) {
