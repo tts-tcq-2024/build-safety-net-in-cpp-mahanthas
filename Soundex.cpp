@@ -2,6 +2,7 @@
 #include <cctype>
 #include <unordered_map>
 #include <unordered_set>
+#include <string>
 
 // Helper function to get the Soundex code for a character
 char getSoundexCode(char c) {
@@ -35,21 +36,30 @@ void processCharacter(char currentChar, char &prevCode, std::string &soundex) {
     }
 }
 
+// Helper function to pad the Soundex string with zeros if needed
+void padSoundex(std::string &soundex) {
+    while (soundex.length() < 4) {
+        soundex += '0';
+    }
+}
+
+// Helper function to initialize the Soundex string
+std::string initializeSoundex(const std::string &name) {
+    return std::string(1, toupper(name[0]));
+}
+
 // Main function to generate the Soundex code for a given name
 std::string generateSoundex(const std::string& name) {
     if (name.empty()) return "";
 
-    std::string soundex(1, toupper(name[0])); // Retain the first letter (capitalized)
+    std::string soundex = initializeSoundex(name); // Retain the first letter (capitalized)
     char prevCode = getSoundexCode(name[0]); // Get the Soundex code for the first letter
 
     for (size_t i = 1; i < name.length() && soundex.length() < 4; ++i) {
         processCharacter(name[i], prevCode, soundex);
     }
 
-    // Pad with zeros if needed
-    while (soundex.length() < 4) {
-        soundex += '0';
-    }
+    padSoundex(soundex);
 
     return soundex; // Return the final Soundex code
 }
