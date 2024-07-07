@@ -1,65 +1,52 @@
 #include "Soundex.h"
 #include <cctype>
 #include <unordered_map>
-#include <unordered_set>
-#include <string>
 
-// Helper function to get the Soundex code for a character
+// Define a map for soundex coding rules
+static const std::unordered_map<char, char> soundexCodes {
+    {'B', '1'}, {'F', '1'}, {'P', '1'}, {'V', '1'},
+    {'C', '2'}, {'G', '2'}, {'J', '2'}, {'K', '2'}, {'Q', '2'},
+    {'S', '2'}, {'X', '2'}, {'Z', '2'},
+    {'D', '3'}, {'T', '3'},
+    {'L', '4'},
+    {'M', '5'}, {'N', '5'},
+    {'R', '6'}
+};
+
 char getSoundexCode(char c) {
-    static const std::unordered_map<char, char> soundexMap = {
-        {'B', '1'}, {'F', '1'}, {'P', '1'}, {'V', '1'},
-        {'C', '2'}, {'G', '2'}, {'J', '2'}, {'K', '2'},
-        {'Q', '2'}, {'S', '2'}, {'X', '2'}, {'Z', '2'},
-        {'D', '3'}, {'T', '3'},
-        {'L', '4'},
-        {'M', '5'}, {'N', '5'},
-        {'R', '6'}
-    };
-    
-    c = toupper(c);
-    auto it = soundexMap.find(c);
-    return it != soundexMap.end() ? it->second : '0'; // For A, E, I, O, U, H, W, Y
+    c = std::toupper(c);
+    auto it = soundexCodes.find(c);
+    return (it != soundexCodes.end()) ? it->second : '0';
 }
 
-// Helper function to check if a character is a vowel
-bool isVowel(char c) {
-    static const std::unordered_set<char> vowels = {'A', 'E', 'I', 'O', 'U'};
-    return vowels.find(toupper(c)) != vowels.end();
-}
-
-// Helper function to process each character in the name
-void processCharacter(char currentChar, char &prevCode, std::string &soundex) {
-    char code = getSoundexCode(currentChar);
+void appendSoundexCode(std::string& soundex, char code, char& prevCode) {
     if (code != '0' && code != prevCode) {
         soundex += code;
         prevCode = code;
     }
 }
 
-// Helper function to pad the Soundex string with zeros if needed
-void padSoundex(std::string &soundex) {
-    while (soundex.length() < 4) {
-        soundex += '0';
+std::string processInitialCharacter(const std::string& name) {
+    std::string soundex;
+    soundex += std::toupper(name[0]);
+    return soundex;
+}
+
+void processRemainingCharacters(const std::string& name, std::string& soundex) {
+    char prevCode = getSoundexCode(name[0]);
+
+    for (size_t i = 1; i < name.length() && soundex.length() < 4; ++i) {
+        char code = getSoundexCode(name[i]);
+        appendSoundexCode(soundex, code, prevCode);
     }
 }
 
-// Helper function to initialize the Soundex string
-std::string initializeSoundex(const std::string &name) {
-    return std::string(1, toupper(name[0]));
-}
-
-// Main function to generate the Soundex code for a given name
 std::string generateSoundex(const std::string& name) {
     if (name.empty()) return "";
 
-    std::string soundex = initializeSoundex(name); // Retain the first letter (capitalized)
-    char prevCode = getSoundexCode(name[0]); // Get the Soundex code for the first letter
+    std::string soundex = processInitialCharacter(name);
+    processRemainingCharacters(name, soundex);
 
-    for (size_t i = 1; i < name.length() && soundex.length() < 4; ++i) {
-        processCharacter(name[i], prevCode, soundex);
-    }
-
-    padSoundex(soundex);
-
-    return soundex; // Return the final Soundex code
+    soundex.resize(4, '0');
+    return soundex;
 }
